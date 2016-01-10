@@ -3,18 +3,57 @@ using System.Collections.Generic;
 
 namespace CashRegister
 {
+    /// <summary>
+    ///  This class is in charge of calculating a customer's bill.
+    /// </summary>
     public class Register
     {
-        public decimal SubTotal      { get; set; }
-        public decimal TaxesTotal    { get; set; }
-        public decimal DiscountsTotal { get; set; }
-        public decimal CouponsTotal  { get; set; }
-        public decimal TotalDue         { get; set; }
+        /// <summary>
+        ///  Total before deductions.
+        /// </summary>
+        public decimal SubTotal { get; set; }
 
+        /// <summary>
+        ///  Total taxes to be applied.
+        /// </summary>
+        public decimal TaxesTotal { get; set; }
+
+        /// <summary>
+        ///  Total discounts to be applied.
+        /// </summary>
+        public decimal DiscountsTotal { get; set; }
+
+        /// <summary>
+        ///  Total coupons to be applied.
+        /// </summary>
+        public decimal CouponsTotal { get; set; }
+
+        /// <summary>
+        ///  Total amount to be paid by the customer.
+        /// </summary>
+        public decimal TotalDue { get; set; }
+
+        /// <summary>
+        ///  Reference to the shopping cart.
+        /// </summary>
         private Cart _cart;
+
+        /// <summary>
+        ///  Reference to the product object.
+        /// </summary>
         private Products _products;
+
+        /// <summary>
+        ///  Reference to the deals object.
+        /// </summary>
         private Deals _deals;
 
+        /// <summary>
+        ///  Initializes the cash register
+        /// </summary>
+        /// <param name="cart">Reference to the cart object.</param>
+        /// <param name="products">Reference to the products object.</param>
+        /// <param name="deals">Reference to the deals object.</param>
         public Register(Cart cart, Products products, Deals deals)
         {
             _cart = cart;
@@ -22,8 +61,12 @@ namespace CashRegister
             _deals = deals;
         }
 
-        public decimal CalculateAllTotals()
+        /// <summary>
+        ///  Calculates every total at once.
+        /// </summary>
+        public void CalculateAllTotals()
         {
+            // Reset all totals
             ResetRegister();
 
             // Calculate subtotal
@@ -40,10 +83,12 @@ namespace CashRegister
 
             // Calculate total amount due
             TotalDue = CalculateTotalDue();
-
-            return TotalDue;
         }
 
+        /// <summary>
+        ///  Calculates the subtotal.
+        /// </summary>
+        /// <returns></returns>
         public decimal CalculateSubtotal()
         {
             decimal subtotal = 0;
@@ -63,6 +108,10 @@ namespace CashRegister
             return subtotal;
         }
 
+        /// <summary>
+        ///  Calculates the discounts total.
+        /// </summary>
+        /// <returns></returns>
         public decimal CalculateDiscountsTotal()
         {
             // Calculate discounts total
@@ -80,6 +129,10 @@ namespace CashRegister
             return discountsTotal;
         }
 
+        /// <summary>
+        ///  Calculates the coupons total.
+        /// </summary>
+        /// <returns></returns>
         public decimal CalculateCouponsTotal()
         {
             decimal couponsTotal = 0;
@@ -97,16 +150,27 @@ namespace CashRegister
             return couponsTotal;
         }
 
+        /// <summary>
+        ///  Calculates the total amount to be paid by the customer.
+        /// </summary>
+        /// <returns></returns>
         public decimal CalculateTotalDue()
         {
             return SubTotal - DiscountsTotal - CouponsTotal + TaxesTotal;
         }
 
+        /// <summary>
+        ///  Calculates the taxes total.
+        /// </summary>
+        /// <returns></returns>
         public decimal CalculateTaxes()
         {
             return (SubTotal - DiscountsTotal - CouponsTotal) * (Tax.GST + Tax.PST);
         }
 
+        /// <summary>
+        /// Resets all totals to zero.
+        /// </summary>
         private void ResetRegister()
         {
             SubTotal = 0;

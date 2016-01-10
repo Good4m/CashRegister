@@ -2,95 +2,184 @@
 using CashRegister.Models;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace CashRegister
 {
+    /// <summary>
+    ///  Represents the store by using the facade pattern.
+    /// </summary>
     public class Store
     {
+        /// <summary>
+        /// Manages a collection of products.
+        /// </summary>
         private Products _products;
+
+        /// <summary>
+        /// Manages a collection of deals.
+        /// </summary>
         private Deals _deals;
+
+        /// <summary>
+        /// Manages the items in the customer's shopping cart.
+        /// </summary>
         private Cart _cart;
+
+        /// <summary>
+        /// Manages calculations.
+        /// </summary>
         private Register _register;
 
+        /// <summary>
+        /// Initializes the store.
+        /// </summary>
         public Store()
         {
+            // Initialize subsystems
             _products = new Products();
             _deals = new Deals();
             _cart = new Cart();
             _register = new Register(_cart, _products, _deals);
 
-
+            // Create some seed data to work with
             CreateDummyProducts();
             CreateDummyDeals();
 
+            // Welcome to user and provide instructions
             Console.WriteLine("Welcome to Jeff's Store.");
-            Console.WriteLine();
+
+            // Print commands
             DisplayCommandList();
+
             Console.WriteLine();
-            //DisplayDealList();
+
+            // Print products
             DisplayProductList();
 
             Console.WriteLine();
-            Console.WriteLine("Please select which products to add to your cart:");
+            Console.WriteLine("\nPlease select which products to add to your cart:");
 
+            // Continuously get input from user via commands
             while (true)
             {
-                string userInput = AskUserForProductCode();
+                Console.WriteLine();
+                Console.WriteLine("Enter the code of the product you wish to add, or type 'help' for a list of commands:");
 
+                // Get input from console
+                string userInput = GetUserInput();
+
+                // Products command
                 if (userInput == "products")
                 {
                     DisplayProductList();
                     continue;
                 }
 
+                // Deals command
                 if (userInput == "deals")
                 {
                     DisplayDealList();
                     continue;
                 }
 
+                // Cart command
                 if (userInput == "cart")
                 {
                     DisplayCart();
                     continue;
                 }
 
+                // Checkout command
                 if (userInput == "checkout")
                     break;
 
+                // Help command
+                if (userInput == "help")
+                    DisplayCommandList();
+
+                // Leave command
                 if (userInput == "leave")
                     return;
 
+                // Show user some feedback
                 ShowSpinner(8);
 
-                Product prod = _products.Get(userInput);
+                // If we reach this point, we know the user
+                // types a product code instead of a command,
+                // so we attempt to find the product.
+                Product prod = _products.Get(userInput.ToUpper());
 
+                // Product found
                 if (prod != null)
                 {
+                    // Add product to cart
                     _cart.AddProduct(prod);
 
                     Console.WriteLine("  Product added to cart. "
                         + "You now have " + _cart.Size() + " item(s).");
                 }
+                // Product not found
                 else
                 {
                     Console.WriteLine("  Product not found.");
                 }
             }
 
+            // Reaching this point means the user has chosen to checkout or leave
+
+            // Calculate the customer's bill
             _register.CalculateAllTotals();
 
+            ShowSpinner(16);
 
-            // Display deals claimed
+            // Display cart contents
+            DisplayCart();
+
+            ShowSpinner(16);
+
+            // Display deals applied to bill
+            DisplayDealsApplied();
+
+            ShowSpinner(16);
+
+            // Display bill and thank you to customer.
+            DisplayBill();
+        }
+
+        /// <summary>
+        ///  Prints out a summary of the customer's bill.
+        /// </summary>
+        private void DisplayBill()
+        {
+            Console.WriteLine(" ");
+            Console.WriteLine("Your bill:");
+            Console.WriteLine("----------------------");
+            ShowSpinner(16);
+            Console.WriteLine("Sub-total:      " + Utilities.FormatAsMoney(_register.SubTotal));
+            Console.WriteLine("Discounts:     -" + Utilities.FormatAsMoney(_register.DiscountsTotal));
+            Console.WriteLine("Coupons:       -" + Utilities.FormatAsMoney(_register.CouponsTotal));
+            Console.WriteLine("Taxes:          " + Utilities.FormatAsMoney(_register.TaxesTotal));
+            Console.WriteLine();
+            Console.WriteLine("Total:          " + Utilities.FormatAsMoney(_register.TotalDue));
+            Console.WriteLine("----------------------");
+            Console.WriteLine();
+            Console.WriteLine("Thank you for shopping. Press <enter> to leave the store.");
+            Console.ReadLine(); // Prevents console from closing
+        }
+
+        /// <summary>
+        ///  Prints a summary of deals applied to the bill.
+        /// </summary>
+        private void DisplayDealsApplied()
+        {
             StringBuilder discountStr = new StringBuilder();
             StringBuilder couponStr = new StringBuilder();
 
             int validDiscounts = 0;
             int validCoupons = 0;
 
+            // Loops through all deals and builds summaries for each deal type
             foreach (KeyValuePair<string, Deal> entry in _deals.All())
             {
                 int timesSatisfied = entry.Value.GetTimesApplyable();
@@ -110,42 +199,32 @@ namespace CashRegister
             }
 
             Console.WriteLine(" ");
+            Console.WriteLine();
 
+            // Prints out all available deals
             if (validDiscounts > 0 || validCoupons > 0)
             {
                 Console.WriteLine("You are eligible for the following deal(s):");
-                ShowSpinner(16);
+                Console.WriteLine("---------------------------------------");
                 Console.WriteLine(discountStr);
                 Console.WriteLine(couponStr);
                 Console.WriteLine("You saved " + Utilities.FormatAsMoney(_register.CouponsTotal + _register.DiscountsTotal) + "!");
             }
+            // No deals available
             else
             {
                 Console.WriteLine("You are not eligible for any deals.");
+                Console.WriteLine();
             }
-
-            Console.WriteLine(" ");
-            Console.WriteLine("ºYour bill:");
-            Console.WriteLine("---------------------");
-            ShowSpinner(16, "Calculating...");
-            Console.WriteLine("Sub-total:      " + Utilities.FormatAsMoney(_register.SubTotal));
-            Console.WriteLine("Discounts:     -" + Utilities.FormatAsMoney(_register.DiscountsTotal));
-            Console.WriteLine("Coupons:       -" + Utilities.FormatAsMoney(_register.CouponsTotal));
-            Console.WriteLine("Taxes:          " + Utilities.FormatAsMoney(_register.TaxesTotal));
-            Console.WriteLine();
-            Console.WriteLine("Total:          " + Utilities.FormatAsMoney(_register.TotalDue));
-            Console.WriteLine("---------------------");
-            Console.WriteLine();
-
-
-            Console.WriteLine("Thank you for shopping. Press any key to leave the store.");
-            Console.ReadLine();
-            Console.ReadLine();
         }
 
+        /// <summary>
+        ///  Displays a summary of available commands.
+        /// </summary>
         private void DisplayCommandList()
         {
-            Console.WriteLine("ºCommands:");
+            Console.WriteLine();
+            Console.WriteLine("Commands:");
             Console.WriteLine();
             Console.WriteLine("Command      Description");
             Console.WriteLine("---------------------------------------");
@@ -156,41 +235,58 @@ namespace CashRegister
             Console.WriteLine("> leave      Leave the store.");
         }
 
+        /// <summary>
+        ///  Displays a summary of the customer's shopping cart.
+        /// </summary>
         private void DisplayCart()
         {
-            Console.WriteLine("ºCart:");
+            Console.WriteLine(" ");
+            Console.WriteLine("Cart:");
             Console.WriteLine();
             Console.WriteLine("Qty\tPrice\t\tName");
             Console.WriteLine("---------------------------------------");
 
+            // Iterate over each product in the customer's cart
             foreach (KeyValuePair<string, int> entry in _cart.Products)
             {
                 Console.WriteLine(entry.Value + "x\t" + Utilities.FormatAsMoney(_products.Get(entry.Key).ActualPrice) + "\t\t" + _products.Get(entry.Key).Name);
             }
         }
 
+        /// <summary>
+        ///  Displays a summary of available products.
+        /// </summary>
         private void DisplayProductList()
         {
-            Console.WriteLine();
-            Console.WriteLine("ºProduct list:");
+            Console.WriteLine("Product list:");
             Console.WriteLine();
             Console.WriteLine("Code\tPrice\t\tName");
             Console.WriteLine("---------------------------------------");
 
+            // Iterate over every available product
             foreach (KeyValuePair<string, Product> entry in _products.All())
             {
-                string chargeby = "";
+                string productCode = entry.Key;
                 Product product = entry.Value;
 
+                // How is this product charged? By unit or by lb.?
+                string chargeby = "";
                 if (product.ChargeBy == Product.ChargeType.Unit)
+                {
                     chargeby = " each ";
-
-                if (product.ChargeBy == Product.ChargeType.Weight)
+                }
+                else if (product.ChargeBy == Product.ChargeType.Weight)
+                {
                     chargeby = " per lb. ";
+                }
 
+                // Print product code
+                Console.Write(productCode + "\t");
 
-                Console.Write(entry.Key + "\t");
+                // Print price
                 Console.Write("$" + product.ActualPrice + chargeby);
+
+                // Print whether the product is on sale or not
                 if (product.IsOnSale)
                 {
                     Console.Write("\t" + product.Name + " (**ON SALE** Previously " + Utilities.FormatAsMoney(product.RegPrice) + ")");
@@ -204,13 +300,19 @@ namespace CashRegister
             }
         }
 
+        /// <summary>
+        ///  Displays a summary of the deals available.
+        /// </summary>
         private void DisplayDealList()
         {
             Console.WriteLine();
-            Console.WriteLine("ºAvailable Deals:");
+            Console.WriteLine("Available Deals:");
             Console.WriteLine("---------------------------------------");
+
             StringBuilder discounts = new StringBuilder();
             StringBuilder coupons = new StringBuilder();
+
+            // Prepares lists for each deal type available
             foreach (KeyValuePair<string, Deal> entry in _deals.All())
             {
                 Deal.DealType type = entry.Value.Type;
@@ -223,23 +325,32 @@ namespace CashRegister
                     coupons.Append("- " + entry.Key + "\n");
                 }
             }
+
+            // Print out all deals
             Console.WriteLine("Discounts:");
             Console.WriteLine(discounts);
             Console.WriteLine("Coupons:");
             Console.WriteLine(coupons);
-
         }
 
-
-        private string AskUserForProductCode()
+        /// <summary>
+        ///  Gets console input from the user.
+        /// </summary>
+        /// <returns></returns>
+        private string GetUserInput()
         {
-            Console.WriteLine();
-            Console.WriteLine("Enter the code of the product you wish to add, or type 'help' for a list of commands:");
             Console.Write("> ");
             string input = Console.ReadLine();
             return input;
         }
 
+        /// <summary>
+        ///  Shows an animated spinner to imply that work is being done.
+        ///  It makes the console a little more readable when pushing
+        ///  lots of information to it at once.
+        /// </summary>
+        /// <param name="length"></param>
+        /// <param name="message"></param>
         private void ShowSpinner(int length, string message = "")
         {
             for (int i = 0; i < length; i++)
@@ -256,10 +367,11 @@ namespace CashRegister
             }
         }
 
-
+        /// <summary>
+        /// Creates some dummy products to use.
+        /// </summary>
         private void CreateDummyProducts()
         {
-            // Create dummy products
             var cheerios = new Product(
                 sku: "CHRO",
                 name: "Box of Cheerios",
@@ -295,50 +407,96 @@ namespace CashRegister
                 weight: 0.15m
             );
 
+            // Add products
             _products.Create(cheerios.Sku, cheerios);
             _products.Create(redbull.Sku, redbull);
             _products.Create(apple.Sku, apple);
             _products.Create(groundbeef.Sku, groundbeef);
         }
 
+        /// <summary>
+        ///  Creates some dummy deals to use.
+        /// </summary>
         private void CreateDummyDeals()
         {
-            // 2 for 1 Box of Cheerios
+            // Create 2 for 1 Box of Cheerios discount
             var cheerios = _products.Get("CHRO");
+
+            // Create deal
             var cheeriosDiscount = new Deal(
                 type: Deal.DealType.Discount,
                 value: cheerios.ActualPrice
             );
+
+            // Add condition
             cheeriosDiscount.AddCondition(new QuantityCondition(
                 product: cheerios,
                 cart: _cart,
                 requiredQuantity: 2
             ));
+
+            // Add to collection
             _deals.Create("Two for one Box of Cheerios.", cheeriosDiscount);
 
-            // Buy 4 Redbulls and get one free
+
+            // Create 4 Redbulls and get one free discount
             var redbull = _products.Get("RDBL");
+
+            // Create deal
             var redbullDiscount = new Deal(
                 type: Deal.DealType.Discount,
                 value: redbull.ActualPrice
             );
+
+            // Add condition
             redbullDiscount.AddCondition(new QuantityCondition(
                 product: redbull,
                 cart: _cart,
                 requiredQuantity: 5
             ));
+
+            // Add to collection
             _deals.Create("Buy four Redbulls and get one free.", redbullDiscount);
 
-            // $1 off for every $10 spent
+
+            // Create $1 off for every $10 spent coupon
             var oneOffForEveryTenCoupon = new Deal(
                 type: Deal.DealType.Coupon,
                 value: 1.00m
             );
+
+            // Add condition
             oneOffForEveryTenCoupon.AddCondition(new CartTotalCondition(
                 register: _register,
                 amountRequired: 10.00m
             ));
+
+            // Add to collection
             _deals.Create("$1 off for every $10 you spend.", oneOffForEveryTenCoupon);
+
+
+            // Create $1 off for every $20 spent coupon
+            // if cart includes at least two Boxes of Cheerios
+            var complexDeal = new Deal(
+                type: Deal.DealType.Coupon,
+                value: 1.00m
+            );
+
+            // Add condition
+            complexDeal.AddCondition(new CartTotalCondition(
+                register: _register,
+                amountRequired: 20.00m
+            ));
+
+            // Add another condition
+            complexDeal.AddCondition(new QuantityCondition(
+                product: redbull,
+                cart: _cart,
+                requiredQuantity: 2
+            ));
+
+            // Add to collection
+            _deals.Create("$1 off for every $20 you spend if you buy at least two Cans of Redbull.", complexDeal);
         }
     }
 }

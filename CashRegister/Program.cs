@@ -8,8 +8,13 @@ namespace CashRegister
 {
     class Program
     {
+        /// <summary>
+        /// Starts the application.
+        /// </summary>
+        /// <param name="args"></param>
         static void Main(string[] args)
         {
+            // Initializes the store.
             Store store = new Store();
         }
     }
