@@ -1,50 +1,88 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace CashRegister.Models
 {
-    class Product
+    /// <summary>
+    /// Represents a tangible product in the store.
+    /// </summary>
+    public class Product
     {
-        public string  ProdCode  { get; set; }
-        public string  Name      { get; set; }
-        public decimal RegPrice  { get; set; }
+        /// <summary>
+        ///  Unique product Sku.
+        /// </summary>
+        public string Sku { get; set; }
+
+        /// <summary>
+        ///  Name of product.
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
+        ///  Price when product is NOT on sale.
+        /// </summary>
+        public decimal RegPrice { get; set; }
+
+        /// <summary>
+        ///  Price when product is on sale.
+        /// </summary>
         public decimal SalePrice { get; set; }
-        public decimal Weight    { get; set; }
-        public bool    IsOnSale  { get; set; }
 
-        public enum ChargeType { Unit, Weight };
-        public ChargeType ChargeBy { get; set; }
-
-        private static Dictionary<string, Product> _products = new Dictionary<string, Product>()
+        /// <summary>
+        ///  The actual price to charge the customer.
+        ///  This will be either RegPrice or SalePrice depending
+        ///  on if the product is on sale.
+        /// </summary>
+        public decimal ActualPrice
         {
-            { "CHRO",
-                new Product("CHRO", "Box of Cheerios", 6.99m, 5.99m, ChargeType.Unit) },
-            { "RDBL",
-                new Product("RDBL", "Can of Redbull", 3.99m, 2.50m, ChargeType.Unit) },
-            { "APPL",
-                new Product("APPL", "Apple", 2.49m, 1.99m, ChargeType.Weight, 0.25m) },
-            { "CRRT",
-                new Product("CRRT", "Ground Beef", 4.99m, 4.65m, ChargeType.Weight, 0.15m) }
-        };
-
-        public static Dictionary<string, Product> All { get { return _products; } }
-
-        public Product(string prodCode, string name, decimal regPrice, decimal salePrice,
-            ChargeType chargeBy, decimal weight = 0, bool isOnSale = false)
-        {
-            ProdCode  = prodCode;
-            Name      = name;
-            RegPrice  = regPrice;
-            SalePrice = salePrice;
-            ChargeBy  = chargeBy;
-            Weight    = weight;
-            IsOnSale  = isOnSale;
+            get
+            {
+                return IsOnSale ? SalePrice : RegPrice;
+            }
         }
 
-        public static Product Get(string productId)
+        /// <summary>
+        ///  Weight of product.
+        /// </summary>
+        public decimal Weight { get; set; }
+
+        /// <summary>
+        ///  Returns true if this product is on sale.
+        /// </summary>
+        public bool IsOnSale { get; set; }
+
+        /// <summary>
+        ///  Signifies how the register should calculate the price of a product.
+        ///  - Unit is by quantity
+        ///  - Weight is by lbs.
+        /// </summary>
+        public enum ChargeType { Unit, Weight };
+
+        /// <summary>
+        ///  How this product's price should be calculated.
+        /// </summary>
+        public ChargeType ChargeBy { get; set; }
+
+        /// <summary>
+        ///  Constructs this product.
+        /// </summary>
+        /// <param name="sku">Unique product Sku.</param>
+        /// <param name="name">Name of product.</param>
+        /// <param name="regPrice">Price if product is NOT on sale.</param>
+        /// <param name="salePrice">Price when product is on sale.</param>
+        /// <param name="chargeBy">How price should be calculated.</param>
+        /// <param name="weight">Weight in lbs.</param>
+        /// <param name="isOnSale">Is the product on sale?</param>
+        public Product(string sku, string name, decimal regPrice, decimal salePrice,
+            ChargeType chargeBy, decimal weight = 0, bool isOnSale = false)
         {
-            Product product;
-            _products.TryGetValue(productId, out product);
-            return product;
+            Sku = sku;
+            Name = name;
+            RegPrice = regPrice;
+            SalePrice = salePrice;
+            ChargeBy = chargeBy;
+            Weight = weight;
+            IsOnSale = isOnSale;
         }
     }
 }

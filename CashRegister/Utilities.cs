@@ -6,9 +6,11 @@ using System.Threading.Tasks;
 
 namespace CashRegister
 {
-    public class Tax
+    public class Utilities
     {
-        public static readonly decimal GST = 0.05m;
-        public static readonly decimal PST = 0.07m;
+        public static string FormatAsMoney(decimal dec)
+        {
+            return string.Format("{0:C}", dec);
+        }
     }
 }

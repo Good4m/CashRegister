@@ -44,15 +44,20 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Cart.cs" />
-    <Compile Include="Coupons\Coupon.cs" />
-    <Compile Include="Coupons\Rules\QuantityCondition.cs" />
-    <Compile Include="Coupons\Rules\Condition.cs" />
-    <Compile Include="Coupons\Rules\ThreshholdCondition.cs" />
+    <Compile Include="Deals.cs" />
+    <Compile Include="IActiveRecord.cs" />
+    <Compile Include="Models\Deal.cs" />
+    <Compile Include="DealConditions\QuantityCondition.cs" />
+    <Compile Include="DealConditions\ICondition.cs" />
+    <Compile Include="DealConditions\CartTotalCondition.cs" />
     <Compile Include="Models\Product.cs" />
+    <Compile Include="Products.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Register.cs" />
+    <Compile Include="Store.cs" />
     <Compile Include="Tax.cs" />
+    <Compile Include="Utilities.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
