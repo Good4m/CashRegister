@@ -249,7 +249,20 @@ namespace CashRegister
             // Iterate over each product in the customer's cart
             foreach (KeyValuePair<string, int> entry in _cart.Products)
             {
-                Console.WriteLine(entry.Value + "x\t" + Utilities.FormatAsMoney(_products.Get(entry.Key).ActualPrice) + "\t\t" + _products.Get(entry.Key).Name);
+                Product product = _products.Get(entry.Key);
+                // How is this product charged? By unit or by lb.?
+                string chargeby = "";
+                if (product.ChargeBy == Product.ChargeType.Unit)
+                {
+                    chargeby = " each ";
+                }
+                else if (product.ChargeBy == Product.ChargeType.Weight)
+                {
+                    chargeby = " per lb. ";
+                }
+
+                Console.WriteLine(entry.Value + "x\t" + Utilities.FormatAsMoney(product.ActualPrice)
+                    + chargeby + "\t" + product.Name);
             }
         }
 
@@ -398,20 +411,30 @@ namespace CashRegister
                 isOnSale: true
             );
 
-            var groundbeef = new Product(
-                sku: "GRDB",
-                name: "Ground Beef",
+            var groundChickenHalf = new Product(
+                sku: "CHKN1",
+                name: "Ground Chicken 1/2 lb.",
                 regPrice: 4.99m,
                 salePrice: 4.65m,
                 chargeBy: Product.ChargeType.Weight,
-                weight: 0.15m
+                weight: 0.5m
+            );
+
+            var groundChickenDouble = new Product(
+                sku: "CHKN2",
+                name: "Ground Chicken 2 lb.",
+                regPrice: 4.99m,
+                salePrice: 4.65m,
+                chargeBy: Product.ChargeType.Weight,
+                weight: 2m
             );
 
             // Add products
             _products.Create(cheerios.Sku, cheerios);
             _products.Create(redbull.Sku, redbull);
             _products.Create(apple.Sku, apple);
-            _products.Create(groundbeef.Sku, groundbeef);
+            _products.Create(groundChickenHalf.Sku, groundChickenHalf);
+            _products.Create(groundChickenDouble.Sku, groundChickenDouble);
         }
 
         /// <summary>
